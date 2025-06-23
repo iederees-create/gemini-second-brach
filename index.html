@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RAVERSUS Camera App</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            min-height: 100vh;
+            background-color: #f0f2f5;
+            color: #333;
+            margin: 0;
+            padding: 20px;
+            box-sizing: border-box;
+        }
+
+        header {
+            width: 100%;
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        h1 {
+            color: #4CAF50; /* A friendly green */
+            margin-bottom: 5px;
+        }
+
+        .container {
+            background-color: #fff;
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
+            padding: 30px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 20px;
+            width: 100%;
+            max-width: 600px;
+        }
+
+        video {
+            width: 100%;
+            max-width: 480px; /* Limit video width for better display */
+            height: auto;
+            border: 2px solid #ddd;
+            border-radius: 8px;
+            background-color: #000;
+            display: block; /* Remove extra space below video */
+        }
+
+        button {
+            background-color: #007bff; /* A vibrant blue */
+            color: white;
+            padding: 12px 25px;
+            border: none;
+            border-radius: 25px;
+            font-size: 1.1em;
+            cursor: pointer;
+            transition: background-color 0.3s ease, transform 0.2s ease;
+            box-shadow: 0 4px 10px rgba(0, 123, 255, 0.2);
+        }
+
+        button:hover {
+            background-color: #0056b3;
+            transform: translateY(-2px);
+        }
+
+        button:active {
+            transform: translateY(0);
+            box-shadow: 0 2px 5px rgba(0, 123, 255, 0.2);
+        }
+
+        canvas {
+            display: none; /* Hidden, used for capturing image data */
+        }
+
+        #capturedImage {
+            max-width: 100%;
+            height: auto;
+            border: 2px solid #4CAF50; /* Green border for captured image */
+            border-radius: 8px;
+            margin-top: 20px;
+            display: none; /* Initially hidden */
+        }
+
+        #analysisResult {
+            margin-top: 25px;
+            padding: 20px;
+            background-color: #e6ffe6; /* Light green background */
+            border: 1px solid #ccebcc;
+            border-radius: 8px;
+            width: 100%;
+            text-align: center;
+            font-size: 1.1em;
+            color: #28a745; /* Darker green text */
+            display: none; /* Initially hidden */
+        }
+
+        /* Responsive adjustments */
+        @media (max-width: 768px) {
+            .container {
+                padding: 20px;
+                gap: 15px;
+            }
+            button {
+                font-size: 1em;
+                padding: 10px 20px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <header>
+        <h1>RAVERSUS</h1>
+        <p>Your friendly camera app</p>
+    </header>
+
+    <div class="container">
+        <video id="cameraFeed" autoplay playsinline></video>
+        <button id="captureButton">Capture Image</button>
+
+        <canvas id="imageCanvas"></canvas>
+        <img id="capturedImage" alt="Captured Image">
+
+        <div id="analysisResult">
+            </div>
+    </div>
+
+    <script>
+        const cameraFeed = document.getElementById('cameraFeed');
+        const captureButton = document.getElementById('captureButton');
+        const imageCanvas = document.getElementById('imageCanvas');
+        const capturedImage = document.getElementById('capturedImage');
+        const analysisResult = document.getElementById('analysisResult');
+        let stream; // To hold the camera stream
+
+        // Function to start the camera
+        async function startCamera() {
+            try {
+                // Request access to the user's camera (video only)
+                stream = await navigator.mediaDevices.getUserMedia({ video: true });
+                cameraFeed.srcObject = stream;
+                cameraFeed.play(); // Start playing the video feed
+            } catch (error) {
+                console.error('Error accessing camera:', error);
+                alert('Could not access the camera. Please ensure you have granted permissions.');
+            }
+        }
+
+        // Function to capture the image
+        captureButton.addEventListener('click', () => {
+            if (!stream) {
+                alert('Camera not active. Please allow camera access.');
+                return;
+            }
+
+            // Set canvas dimensions to match the video feed
+            imageCanvas.width = cameraFeed.videoWidth;
+            imageCanvas.height = cameraFeed.videoHeight;
+
+            // Draw the current video frame onto the canvas
+            const context = imageCanvas.getContext('2d');
+            context.drawImage(cameraFeed, 0, 0, imageCanvas.width, imageCanvas.height);
+
+            // Get the image data from the canvas as a data URL (PNG format)
+            const imageDataUrl = imageCanvas.toDataURL('image/png');
+
+            // Display the captured image in the <img> tag
+            capturedImage.src = imageDataUrl;
+            capturedImage.style.display = 'block'; // Make the image visible
+
+            // Display a generic "analysis" message
+            analysisResult.innerHTML = '<p><strong>Analysis Result:</strong> Image successfully captured!</p><p>This is where your AI analysis would theoretically go.</p>';
+            analysisResult.style.display = 'block'; // Make the analysis result visible
+
+            // Optional: Stop the camera stream after capturing to save battery/resources
+            // stream.getTracks().forEach(track => track.stop());
+            // cameraFeed.srcObject = null;
+        });
+
+        // Start the camera when the page loads
+        window.addEventListener('load', startCamera);
+
+        // Optional: Stop camera when navigating away from the page
+        window.onbeforeunload = () => {
+            if (stream) {
+                stream.getTracks().forEach(track => track.stop());
+            }
+        };
+    </script>
+</body>
+</html>
