@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>RAVERSUS Camera App</title>
+    <title>RAVERSUS Medical Image Assist</title>
     <style>
         body {
             font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
@@ -12,8 +12,8 @@
             align-items: center;
             justify-content: center;
             min-height: 100vh;
-            background-color: #f0f2f5;
-            color: #333;
+            background-color: #e8f5e9; /* Lighter green background for medical feel */
+            color: #212121;
             margin: 0;
             padding: 20px;
             box-sizing: border-box;
@@ -26,53 +26,89 @@
         }
 
         h1 {
-            color: #4CAF50; /* A friendly green */
+            color: #2e7d32; /* Deep green */
             margin-bottom: 5px;
+            font-size: 2.5em;
+        }
+
+        p.subtitle {
+            color: #555;
+            font-size: 1.1em;
+            margin-bottom: 20px;
         }
 
         .container {
             background-color: #fff;
-            border-radius: 12px;
-            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.1);
-            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 6px 25px rgba(0, 0, 0, 0.15);
+            padding: 35px;
             display: flex;
             flex-direction: column;
             align-items: center;
-            gap: 20px;
+            gap: 25px;
             width: 100%;
-            max-width: 600px;
+            max-width: 650px;
+            position: relative;
+            overflow: hidden; /* For pseudo-elements */
+        }
+
+        /* Subtle medical cross icon for branding */
+        .container::before {
+            content: '🏥'; /* Unicode medical symbol */
+            position: absolute;
+            top: 15px;
+            left: 20px;
+            font-size: 3em;
+            opacity: 0.1;
+            transform: rotate(-15deg);
+            z-index: 0;
+        }
+        .container::after {
+            content: '➕'; /* Plus symbol for health/first aid */
+            position: absolute;
+            bottom: 15px;
+            right: 20px;
+            font-size: 3em;
+            opacity: 0.1;
+            transform: rotate(15deg);
+            z-index: 0;
         }
 
         video {
             width: 100%;
-            max-width: 480px; /* Limit video width for better display */
+            max-width: 520px;
             height: auto;
-            border: 2px solid #ddd;
-            border-radius: 8px;
+            border: 3px solid #66bb6a; /* Lighter green border */
+            border-radius: 10px;
             background-color: #000;
-            display: block; /* Remove extra space below video */
+            display: block;
+            z-index: 1; /* Ensure video is above pseudo-elements */
         }
 
         button {
-            background-color: #007bff; /* A vibrant blue */
+            background-color: #4CAF50; /* A strong, friendly green */
             color: white;
-            padding: 12px 25px;
+            padding: 15px 30px;
             border: none;
-            border-radius: 25px;
-            font-size: 1.1em;
+            border-radius: 30px;
+            font-size: 1.2em;
             cursor: pointer;
-            transition: background-color 0.3s ease, transform 0.2s ease;
-            box-shadow: 0 4px 10px rgba(0, 123, 255, 0.2);
+            transition: background-color 0.3s ease, transform 0.2s ease, box-shadow 0.3s ease;
+            box-shadow: 0 5px 15px rgba(76, 175, 80, 0.3);
+            font-weight: bold;
+            letter-spacing: 0.5px;
+            z-index: 1;
         }
 
         button:hover {
-            background-color: #0056b3;
-            transform: translateY(-2px);
+            background-color: #388e3c;
+            transform: translateY(-3px);
+            box-shadow: 0 8px 20px rgba(76, 175, 80, 0.4);
         }
 
         button:active {
             transform: translateY(0);
-            box-shadow: 0 2px 5px rgba(0, 123, 255, 0.2);
+            box-shadow: 0 3px 10px rgba(76, 175, 80, 0.2);
         }
 
         canvas {
@@ -82,34 +118,60 @@
         #capturedImage {
             max-width: 100%;
             height: auto;
-            border: 2px solid #4CAF50; /* Green border for captured image */
-            border-radius: 8px;
-            margin-top: 20px;
+            border: 3px solid #2e7d32; /* Deep green border for captured image */
+            border-radius: 10px;
+            margin-top: 25px;
             display: none; /* Initially hidden */
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+            z-index: 1;
         }
 
         #analysisResult {
-            margin-top: 25px;
-            padding: 20px;
-            background-color: #e6ffe6; /* Light green background */
-            border: 1px solid #ccebcc;
-            border-radius: 8px;
+            margin-top: 30px;
+            padding: 25px;
+            background-color: #f1f8e9; /* Very light green background */
+            border: 1px dashed #a5d6a7; /* Dashed border to imply not final */
+            border-radius: 10px;
             width: 100%;
             text-align: center;
             font-size: 1.1em;
-            color: #28a745; /* Darker green text */
+            color: #33691e; /* Darker green text */
             display: none; /* Initially hidden */
+            box-shadow: 0 2px 10px rgba(0, 0, 0, 0.05);
+            line-height: 1.6;
+            z-index: 1;
+        }
+
+        .disclaimer {
+            margin-top: 30px;
+            font-size: 0.9em;
+            color: #d32f2f; /* Red for emphasis on disclaimer */
+            background-color: #ffebee; /* Light red background */
+            border: 1px solid #ef9a9a;
+            padding: 15px;
+            border-radius: 8px;
+            text-align: center;
+            max-width: 650px;
+            line-height: 1.4;
+            font-weight: 500;
         }
 
         /* Responsive adjustments */
         @media (max-width: 768px) {
             .container {
-                padding: 20px;
-                gap: 15px;
+                padding: 25px;
+                gap: 20px;
+            }
+            h1 {
+                font-size: 2em;
             }
             button {
-                font-size: 1em;
-                padding: 10px 20px;
+                font-size: 1.1em;
+                padding: 12px 25px;
+            }
+            .disclaimer {
+                padding: 10px;
+                font-size: 0.85em;
             }
         }
     </style>
@@ -117,18 +179,33 @@
 <body>
     <header>
         <h1>RAVERSUS</h1>
-        <p>Your friendly camera app</p>
+        <p class="subtitle">Medical Image Assistant</p>
     </header>
 
     <div class="container">
+        <h2>Live Camera Feed</h2>
         <video id="cameraFeed" autoplay playsinline></video>
-        <button id="captureButton">Capture Image</button>
+        <button id="captureButton">Capture Image for Review</button>
 
         <canvas id="imageCanvas"></canvas>
-        <img id="capturedImage" alt="Captured Image">
+        <img id="capturedImage" alt="Captured Image for Review">
 
         <div id="analysisResult">
-            </div>
+            <h3>Preliminary AI Insight (Non-Diagnostic)</h3>
+            <p><strong>Image Quality:</strong> Good resolution, clear focus.</p>
+            <p><strong>Initial Feature Scan:</strong> No obvious major artifacts detected. The image appears suitable for further professional review.</p>
+            <p>This section *theoretically* represents where AI could assist with tasks like:
+                <ul>
+                    <li>Assessing image clarity/focus.</li>
+                    <li>Highlighting specific areas for a doctor's attention.</li>
+                    <li>Performing basic, non-diagnostic measurements.</li>
+                </ul>
+            </p>
+        </div>
+    </div>
+
+    <div class="disclaimer">
+        <strong>IMPORTANT DISCLAIMER:</strong> This app is for demonstration and educational purposes only. It uses your camera to capture images. Any "analysis" or "insight" provided by this app is purely theoretical and **DOES NOT constitute medical advice, diagnosis, or treatment.** Always consult with a qualified medical professional for any health concerns or before making any decisions related to your health. Do not use this app for self-diagnosis or to replace professional medical care.
     </div>
 
     <script>
@@ -148,14 +225,14 @@
                 cameraFeed.play(); // Start playing the video feed
             } catch (error) {
                 console.error('Error accessing camera:', error);
-                alert('Could not access the camera. Please ensure you have granted permissions.');
+                alert('Could not access the camera. Please ensure you have granted camera permissions in your browser settings.');
             }
         }
 
         // Function to capture the image
         captureButton.addEventListener('click', () => {
             if (!stream) {
-                alert('Camera not active. Please allow camera access.');
+                alert('Camera not active. Please allow camera access to capture an image.');
                 return;
             }
 
@@ -174,9 +251,12 @@
             capturedImage.src = imageDataUrl;
             capturedImage.style.display = 'block'; // Make the image visible
 
-            // Display a generic "analysis" message
-            analysisResult.innerHTML = '<p><strong>Analysis Result:</strong> Image successfully captured!</p><p>This is where your AI analysis would theoretically go.</p>';
+            // Display the "analysis" result
             analysisResult.style.display = 'block'; // Make the analysis result visible
+
+            // In a real application, you would send imageDataUrl to a backend AI service here
+            // or perform client-side AI analysis with a library like TensorFlow.js.
+            // For this educational example, we just display static text.
 
             // Optional: Stop the camera stream after capturing to save battery/resources
             // stream.getTracks().forEach(track => track.stop());
